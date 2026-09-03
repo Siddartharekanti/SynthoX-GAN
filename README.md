@@ -1,29 +1,33 @@
-# 🫁 Synthesizing Chest X-Ray Images with Conditional AC-GAN
+# 🫁 SynthoX-GAN: Conditional Chest Radiograph Synthesis & Clinical Biomarker Validation
 
+[![GitHub Repository](https://img.shields.io/badge/GitHub-SynthoX--GAN-181717?style=flat&logo=github)](https://github.com/Siddartharekanti/SynthoX-GAN)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![TensorFlow 2.x](https://img.shields.io/badge/TensorFlow-2.x-orange.svg)](https://tensorflow.org)
+[![Python 3.9+](https://img.shields.io/badge/Python-3.9+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![TensorFlow 2.x](https://img.shields.io/badge/TensorFlow-2.x-FF6F00.svg?logo=tensorflow&logoColor=white)](https://tensorflow.org)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)]()
 
-A deep learning project implementing an **Auxiliary Classifier Generative Adversarial Network (AC-GAN)** in **TensorFlow/Keras** to synthesize high-fidelity, conditioned $(64 \times 64 \times 3)$ Chest X-Ray images for **Normal** and **Pneumonia** pathology.
+> **SynthoX-GAN** is an advanced medical deep learning framework implementing an **Auxiliary Classifier Generative Adversarial Network (AC-GAN)** in **TensorFlow/Keras** to synthesize high-resolution, pathology-conditioned $(64 \times 64 \times 3)$ Chest X-Ray images across **Normal** (healthy lungs) and **Pneumonia** diagnostic classes.
 
 ---
 
-## 📌 Highlights & Key Contributions
+## 🔬 Scientific Motivation & Core Contributions
 
-- **Class-Conditioned Medical Image Generation**: Uses one-hot class vectors concatenated with 100-dim latent noise to generate targeted diagnostic states (`NORMAL` vs `PNEUMONIA`).
-- **Stabilized GAN Training Dynamics**:
-  - Employs **Least-Squares (MSE)** adversarial loss for gradient continuity and stability.
-  - Features **Layer Normalization** in the generator and **LeakyReLU ($\alpha=0.2$)** + **$L_2$ Regularization** in the discriminator to prevent mode collapse.
-  - Uses $5 \times 5$ kernel convolutions to capture broader anatomical thoracic spatial correlations.
-- **Downstream Utility Evaluation (Synthetic-to-Real Transfer)**:
-  - 30,000 synthetic images generated from the AC-GAN.
-  - A **VGG16 deep classification network** was trained **solely on synthetic images** and tested on **unseen real clinical scans**.
-  - Attained **93.90% Accuracy**, **95.76% F1-Score**, and **99.12% Recall** on real clinical scans, verifying the clinical feature validity of the synthetic distributions.
+Medical generative modeling often struggles with mode collapse, vanishing gradients, and the synthesis of clinically irrelevant visual artifacts. **SynthoX-GAN** tackles these challenges through an integrated architectural design and a rigorous downstream clinical transfer protocol:
+
+1. **Pathology-Conditioned Synthesis**: Generates targeted radiological states (`NORMAL` vs. `PNEUMONIA`) by injecting one-hot categorical conditioning vectors into the generator latent space and utilizing auxiliary multi-task classification heads in the discriminator.
+2. **Stable Adversarial Optimization**:
+   - **Least-Squares GAN (LSGAN) Objective**: Uses Mean Squared Error (MSE) loss for discriminator score continuity and smoother gradient flow.
+   - **Layer Normalization & Regularization**: Implements LayerNorm in generator transposed convolutions alongside $L_2$ weight decay ($\lambda = 0.001$) and LeakyReLU ($\alpha=0.2$) in the discriminator.
+   - **$5 \times 5$ Thoracic Receptive Fields**: Uses larger convolution kernels to model complex anatomical rib, heart, and lung field dependencies.
+3. **Synthetic-to-Real Clinical Transfer Evaluation**:
+   - Generated **30,000 synthetic chest radiographs** from the trained generator.
+   - Trained a deep **VGG16 classification network** exclusively on **synthetic images**.
+   - Evaluated the classifier on **real, unseen clinical patient radiographs**.
+   - Achieved **93.90% Accuracy**, **95.76% F1-Score**, and **99.12% Recall** on real scans—demonstrating that the synthetic distribution captured authentic pathological biomarkers.
 
 ---
 
-## 🏗️ AC-GAN Model Architecture
+## 🏗️ SynthoX-GAN Architecture
 
 ```
                        ┌───────────────────────────────┐
@@ -50,52 +54,50 @@ A deep learning project implementing an **Auxiliary Classifier Generative Advers
 
 ---
 
-## 📊 Downstream Evaluation & Clinical Metrics
+## 📊 Downstream Clinical Validation Results
 
-To empirically validate whether the generator synthesized true clinical features rather than memorized artifacts, a **VGG16 classifier** was trained on 30,000 purely synthetic images and tested on the original real clinical dataset:
-
-| Metric | Score | Clinical Relevance |
+| Diagnostic Metric | Score | Clinical Interpretation |
 | :--- | :---: | :--- |
-| **Accuracy** | **93.90%** | Robust generalization across patient distributions |
-| **F1-Score** | **95.76%** | High balance between precision and sensitivity |
-| **Recall (Sensitivity)** | **99.12%** | Near-zero false negatives (crucial for medical screening) |
-| **Precision** | **92.62%** | High specificity minimizing false alarms |
+| **Accuracy** | **93.90%** | Exceptional generalization across clinical patient cohorts |
+| **F1-Score** | **95.76%** | High harmonic balance between precision and sensitivity |
+| **Recall (Sensitivity)** | **99.12%** | Critical reduction of false negatives in pneumonia screening |
+| **Precision** | **92.62%** | High specificity minimizing false positives |
 
 ---
 
 ## 📁 Repository Structure
 
 ```
-Using-GAN-to-Generate-Chest-X-Ray-Images/
+SynthoX-GAN/
 │
 ├── src/                                  # Modular Python source code
-│   ├── __init__.py
-│   ├── dataset.py                        # Dataset loading, resizing & normalization
+│   ├── __init__.py                       # Package metadata & exports
+│   ├── dataset.py                        # Dataset discovery, resizing, & normalization
 │   ├── models.py                         # AC-GAN Generator & Discriminator network graphs
-│   ├── train.py                          # Training loop with batch logging & checkpointing
-│   ├── generate.py                       # Standalone inference & synthetic sampling
+│   ├── train.py                          # Training loop with sample checkpointing
+│   ├── generate.py                       # Inference CLI to sample synthetic X-rays
 │   └── evaluate.py                       # VGG16 synthetic-to-real transfer evaluation
 │
 ├── notebooks/
-│   └── chest_xray_acgan_training.ipynb   # Interactive Jupyter / Colab training notebook
+│   └── chest_xray_acgan_training.ipynb   # Interactive Jupyter / Google Colab notebook
 │
-├── .gitignore                            # Standard git exclusions
-├── LICENSE                               # MIT License
+├── .gitignore                            # Exclusions (datasets, weights, caches)
+├── LICENSE                               # MIT Open-Source License
 ├── requirements.txt                      # Project dependencies
 └── README.md                             # Documentation
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quickstart & Setup
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/Siddartharekanti/Using-GAN-to-Generate-Chest-X-Ray-Images.git
-cd Using-GAN-to-Generate-Chest-X-Ray-Images
+git clone https://github.com/Siddartharekanti/SynthoX-GAN.git
+cd SynthoX-GAN
 ```
 
-### 2. Set Up Virtual Environment & Dependencies
+### 2. Install Dependencies
 ```bash
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -103,16 +105,16 @@ pip install -r requirements.txt
 ```
 
 ### 3. Download the Dataset
-The dataset can be obtained from [Kaggle Chest X-Ray Images (Pneumonia)](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia):
+The dataset is available on Kaggle: [Chest X-Ray Images (Pneumonia)](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia):
 ```bash
 python -c "import opendatasets as op; op.download('https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia')"
 ```
 
 ---
 
-## 💻 Usage
+## 💻 CLI Usage
 
-### Train the AC-GAN
+### 🏋️ Train SynthoX-GAN
 ```bash
 python -m src.train \
     --data_dir "chest-xray-pneumonia/chest_xray/train" \
@@ -122,9 +124,9 @@ python -m src.train \
     --output_dir "checkpoints"
 ```
 
-### Generate Synthetic X-Ray Samples
+### 🎨 Synthesize New Chest X-Rays
 ```bash
-# Generate 16 sample images (both classes)
+# Generate a grid of 16 synthetic chest radiographs (Normal & Pneumonia)
 python -m src.generate \
     --model_path "checkpoints/generator.h5" \
     --num_samples 16 \
@@ -132,7 +134,7 @@ python -m src.generate \
     --output_image "synthetic_xrays.png"
 ```
 
-### Run Synthetic-to-Real Evaluation
+### 🧪 Run Synthetic-to-Real Evaluation Pipeline
 ```bash
 python -m src.evaluate \
     --generator_path "checkpoints/generator.h5" \
@@ -146,11 +148,11 @@ python -m src.evaluate \
 
 ## 📜 License
 
-Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
+This project is licensed under the **MIT License** - see the [`LICENSE`](LICENSE) file for details.
 
 ---
 
-## 👤 Author & Acknowledgments
+## 👨‍💻 Author & Contact
 
-- **Siddartha Arekanti** ([@Siddartharekanti](https://github.com/Siddartharekanti))
-- Dataset: [Chest X-Ray Images (Pneumonia)](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia) by Paul Mooney.
+- **Siddartha Arekanti** - GitHub: [@Siddartharekanti](https://github.com/Siddartharekanti)
+- Academic Affiliation: SRM University AP
